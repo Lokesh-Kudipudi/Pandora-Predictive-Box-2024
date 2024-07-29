@@ -54,7 +54,7 @@ def get_ds(config):
 
   # List of objects which contains the quesition and the asnwer 
   ds_raw = []
-  with open('data.json', 'r') as data:
+  with open(config['data_path'], 'r') as data:
     ds_raw = json.loads(data.read())
 
   #ds_raw = load_dataset("Helsinki-NLP/opus_books", f"{config['lang_src']}-{config['lang_tgt']}", split='train')

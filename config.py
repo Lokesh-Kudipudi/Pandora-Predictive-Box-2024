@@ -15,6 +15,7 @@ def get_config():
     'experiment_name': 'runs/tmodel',
     'N': 6,
     'h': 8,
+    'data_path': 'data.json',
     'dropout': 0.1,
     'd_ff': 2048
   }
