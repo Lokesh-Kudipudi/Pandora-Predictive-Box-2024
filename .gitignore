@@ -1,7 +1,7 @@
 __pycache__
 *.pt
-*.json
 runs/
 weights/
 
 wandb/
+tokenizer.json
