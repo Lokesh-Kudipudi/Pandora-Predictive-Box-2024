@@ -187,7 +187,6 @@ def train_model(config):
       # We run the 'run_validation' function at the end of each epoch
       # to evaluate model performance
 
-      run_validation(model, val_dataloader, tokenizer, config['seq_len'], device, lambda msg: batch_iterator.write(msg), global_step, writer)
 
       model_filename = get_weights_file_path(config, f'{epoch:02d}')
       # Writting current model state to the 'model_filename'
@@ -197,6 +196,7 @@ def train_model(config):
           'optimizer_state_dict': optimizer.state_dict(), # Current optimizer state
           'global_step': global_step # Current global step 
         }, model_filename)
+    run_validation(model, val_dataloader, tokenizer, config['seq_len'], device, lambda msg: batch_iterator.write(msg), global_step, writer)
 
 if __name__ == '__main__':
     warnings.filterwarnings('ignore') # Filtering warnings
