@@ -20,6 +20,7 @@ import random
 from QAdata import MedicalDatasetQA
 from ContextData import MedicalDatasetContext
 import json
+from params import count_parameters
 
 # Iterating through dataset to extract the original sentence and its translation 
 def get_all_sentences(ds, config):
@@ -111,7 +112,7 @@ def train_model(config):
   #Define the Device
   device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
   print(f"Using device {device}")
-
+  print('')
   # Creating model directory to store weights
   Path(config['model_folder']).mkdir(parents=True, exist_ok=True)
   # Retrieving dataloaders and tokenizers for source and target languages using the 'get_ds' function
@@ -119,6 +120,8 @@ def train_model(config):
 
   # Initializing model on the GPU using the 'get_model' function
   model = get_model(config,tokenizer.get_vocab_size()).to(device)
+  count_parameters(model)
+  print('')
 
   # Tensorboard
   writer = SummaryWriter(config['experiment_name'])

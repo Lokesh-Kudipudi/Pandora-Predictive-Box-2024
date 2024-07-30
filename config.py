@@ -3,13 +3,16 @@ from pathlib import Path
 def get_config():
   state = 'preTrain'   
   dataPath = ''
+  batchSize = ''
   if state == 'preTrain':
     dataPath = 'context.json'
+    batchSize = 32
   if state == 'fineTune.json':
+    batchSize = 5
     dataPath = 'data.json'  
 
   return{
-    'batch_size': 2,
+    'batch_size': batchSize,
     'num_epochs': 10,
     'lr': 10**-4,
     'seq_len': 350,
@@ -19,7 +22,7 @@ def get_config():
     'preload': None,
     'tokenizer_file': 'tokenizer.json',
     'experiment_name': 'runs/tmodel',
-    'N': 6,
+    'N': 8,
     'h': 8,
     'data_path': f"{dataPath}",
     'state': f"{state}",
