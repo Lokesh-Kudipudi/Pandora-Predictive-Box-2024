@@ -1,5 +1,5 @@
 import torch
-from dataset import casual_mask
+from QAdata import casual_mask
 
 # Define function to obtain the most probable next token
 def greedy_decode(model, source, source_mask, tokenizer, max_len, device):

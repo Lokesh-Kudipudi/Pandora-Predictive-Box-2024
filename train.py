@@ -1,10 +1,9 @@
 import torch
 import torch.nn as nn
-from torch.utils.data import random_split, DataLoader
+from torch.utils.data import DataLoader
 
 from config import get_config, get_weights_file_path
 from tensorboardX import SummaryWriter
-from datasets import load_dataset
 from tokenizers import Tokenizer
 from tokenizers.models import WordLevel
 from tokenizers.trainers import WordLevelTrainer
@@ -18,14 +17,19 @@ from model import build_transformer
 import warnings
 
 import random
-from dataset import MedicalDataset, casual_mask
+from QAdata import MedicalDatasetQA
+from ContextData import MedicalDatasetContext
 import json
 
 # Iterating through dataset to extract the original sentence and its translation 
-def get_all_sentences(ds):
-  for pair in ds:
-    yield pair['question']
-    yield pair['answer']
+def get_all_sentences(ds, config):
+  if(config['state'] == 'fineTune'):
+    for pair in ds:
+      yield pair['question']
+      yield pair['answer']
+  if(config['state'] == 'preTrain'):
+    for pair in ds:
+      yield pair['context']    
 
 def get_or_build_tokenizer(config, ds):
    # Crating a file path for the tokenizer
@@ -38,10 +42,10 @@ def get_or_build_tokenizer(config, ds):
     tokenizer.pre_tokenizer = Whitespace() # We will split the text into tokens based on whitespace
 
     # Defining Word Level strategy and special tokens
-    trainer = WordLevelTrainer(special_tokens = ["[UNK]", "[PAD]","[SOS]", "[EOS]"], min_frequency=2)
+    trainer = WordLevelTrainer(special_tokens = ["[UNK]", "[PAD]","[SOS]", "[EOS]", "[MASK]"], min_frequency=2)
 
     # Training new tokenizer on sentences from the dataset and language specified
-    tokenizer.train_from_iterator(get_all_sentences(ds), trainer = trainer)
+    tokenizer.train_from_iterator(get_all_sentences(ds, config), trainer = trainer)
     # Saving trained tokenizer to the file path specified at the beginning of the function
     tokenizer.save(str(tokenizer_path)) 
   else:
@@ -69,22 +73,29 @@ def get_ds(config):
   train_ds_raw = ds_raw[:train_ds_size]
   val_ds_raw = ds_raw[train_ds_size:]
 
-  train_ds = MedicalDataset(train_ds_raw, tokenizer, config['seq_len'])
-  val_ds = MedicalDataset(val_ds_raw, tokenizer, config['seq_len'])
-
-  
-
+  train_ds = ''
+  val_ds = ''
   max_len_src = 0
   max_len_tgt = 0
-  for pair in ds_raw:
-    src_ids = tokenizer.encode(pair['question']).ids
-    tgt_ids = tokenizer.encode(pair['answer']).ids
-    max_len_src = max(max_len_src, len(src_ids))
-    max_len_tgt = max(max_len_tgt, len(tgt_ids))
 
-  print(f'Max length of source sentence: {max_len_src}')
-  print(f'Max length of Target Text sentence: {max_len_tgt}')
-
+  if(config['state'] == 'preTrain'):
+    train_ds = MedicalDatasetContext(train_ds_raw, tokenizer, config['seq_len'])
+    val_ds = MedicalDatasetContext(val_ds_raw, tokenizer, config['seq_len'])
+    for pair in ds_raw:
+      src_ids = tokenizer.encode(pair['context']).ids
+      max_len_src = max(max_len_src, len(src_ids))
+    print(f'Max length of source sentence: {max_len_src}')
+  if(config['state'] == 'fineTune'):
+    train_ds = MedicalDatasetQA(train_ds_raw, tokenizer, config['seq_len'])
+    val_ds = MedicalDatasetQA(val_ds_raw, tokenizer, config['seq_len'])
+    for pair in ds_raw:
+      src_ids = tokenizer.encode(pair['question']).ids
+      tgt_ids = tokenizer.encode(pair['answer']).ids
+      max_len_src = max(max_len_src, len(src_ids))
+      max_len_tgt = max(max_len_tgt, len(tgt_ids))
+    print(f'Max length of source sentence: {max_len_src}')
+    print(f'Max length of Target Text sentence: {max_len_tgt}')
+  
   # Creating dataloaders for the training and validadion sets
   # Dataloaders are used to iterate over the dataset in batches during training and validation
   # Batch size will be defined in the config dictionary

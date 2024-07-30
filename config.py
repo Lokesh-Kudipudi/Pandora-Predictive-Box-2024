@@ -1,7 +1,13 @@
 from pathlib import Path
-
 # Define settings for building and training the transformer model
 def get_config():
+  state = 'preTrain'   
+  dataPath = ''
+  if state == 'preTrain':
+    dataPath = 'context.json'
+  if state == 'fineTune.json':
+    dataPath = 'data.json'  
+
   return{
     'batch_size': 2,
     'num_epochs': 10,
@@ -15,7 +21,8 @@ def get_config():
     'experiment_name': 'runs/tmodel',
     'N': 6,
     'h': 8,
-    'data_path': 'data.json',
+    'data_path': f"{dataPath}",
+    'state': f"{state}",
     'dropout': 0.1,
     'd_ff': 2048
   }

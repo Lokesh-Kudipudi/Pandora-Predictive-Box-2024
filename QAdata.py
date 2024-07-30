@@ -1,13 +1,13 @@
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader, Dataset, random_split
+from torch.utils.data import  Dataset
 
 def casual_mask(size):
   # Creating a square matrix of dimensions 'size x size' filled with ones
   mask = torch.triu(torch.ones(1, size, size), diagonal = 1).type(torch.int)
   return mask == 0
 
-class MedicalDataset(Dataset):
+class MedicalDatasetQA(Dataset):
 
   def __init__(self, ds, tokenizer, seq_len) -> None:
     super().__init__()
